@@ -1,0 +1,29 @@
+{
+  "name": "prise",
+  "version": "1.0.0",
+  "description": "A utility that finds plugins for NPM based frameworks.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gausby/prise.git"
+  },
+  "keywords": [
+    "plugin",
+    "framework"
+  ],
+  "author": "Martin Gausby <martin@gausby.dk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gausby/prise/issues"
+  },
+  "homepage": "https://github.com/gausby/prise",
+  "devDependencies": {
+    "tape": "^2.14.0"
+  },
+  "dependencies": {
+    "operandi": "1.1.0"
+  }
+}
