@@ -1,6 +1,6 @@
 {
   "name": "prise",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A utility that finds plugins for NPM based frameworks.",
   "main": "index.js",
   "scripts": {
