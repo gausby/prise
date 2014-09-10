@@ -7,9 +7,9 @@ A utility that finds plugins for NPM based frameworks.
 
 Prise takes three arguments:
 
-  - a folder (that contains a *node_modules*-folder)
-  - a prefix for node modules to look for
-  - a callback function that receives an error element as its first element, and a result array as it second that will contain a list of found modules
+  - a folder (that contains folders of node modules).
+  - a prefix that the wanted node modules should begin with.
+  - a callback function that receives an error element as its first element, and a result array as it second that will contain a list of found modules/packages.
 
 ### Example
 
