@@ -24,6 +24,7 @@
     "tape": "^2.14.0"
   },
   "dependencies": {
-    "operandi": "1.1.0"
+    "operandi": "1.1.0",
+    "read-package-json": "1.2.7"
   }
 }

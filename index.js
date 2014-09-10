@@ -1,12 +1,13 @@
 var path = require('path');
 var fs = require('fs');
 var operandi = require('operandi');
+var readPackageJson = require('read-package-json');
 
 function noop() {}
 
-function get_folders_from_folder(folder) {
+function getFolders(basedir) {
 	return function(done) {
-		fs.readdir(path.resolve(folder, 'node_modules'), done);
+		fs.readdir(path.resolve(basedir), done);
 	}
 }
 
@@ -22,41 +23,43 @@ function filterPrefix(prefix) {
 	};
 }
 
-function getMetaData(folders, done) {
-	operandi.eachBatch(folders, function(arr, index, done) {
-		var folder = arr[index];
-		var package_json = path.resolve('node_modules', folder, 'package.json');
+function getMetaData(basedir) {
+	return function(folders, done) {
+		operandi.eachBatch(folders, function(arr, index, done) {
+			var folder = path.resolve(basedir, arr[index]);
 
-		fs.readFile(package_json, function(err, data) {
-			var package = {};
-
-			if (! err) {
-				package = JSON.parse(data);
-				if (package.main) {
-					// ensure that main has been resolved absolutely
-					package.main = path.resolve('node_modules', folder, package.main);
-				}
-			}
-
-			if (! package.main) {
-				// alternatively try to locate an index.js file in the folder
-				var index_js = path.resolve('node_modules', folder, 'index.js');
-				fs.exists(index_js, function(exists) {
-					if (exists){
-						package.name = package.name || folder;
-						package.main = index_js;
-
-						return done(undefined, package);
+			function readPackageData(done) {
+				var package_json = path.resolve(folder, 'package.json');
+				fs.exists(package_json, function(hasPackage) {
+					if (hasPackage) {
+						return readPackageJson(package_json, done);
 					}
-
-					return done(err, package);
+					// return a minimal package object if non-existent
+					return done(undefined, { name: arr[index] });
 				});
 			}
-			else {
-				return done(err, package);
+
+			function resolveMainFile(package, done) {
+				if (package.main) {
+					// get absolute path to main file
+					package.main = path.resolve(folder, package.main);
+					return done(undefined, package);
+				}
+
+				// alternatively try to locate an index.js file in the folder
+				var index_js = path.resolve(folder, 'index.js');
+				fs.exists(index_js, function(exists) {
+					if (exists){
+						package.main = index_js;
+					}
+
+					return done(undefined, package);
+				});
 			}
-		});
-	}, 10, done);
+
+			return operandi.serial([readPackageData, resolveMainFile], done);
+		}, 10, done);
+	}
 }
 
 function removePackagesWithNoMainFile(packages, done) {
@@ -65,14 +68,13 @@ function removePackagesWithNoMainFile(packages, done) {
 	}));
 }
 
-
-module.exports = function(folder, prefix, done) {
-	done = (typeof done === 'function' ? done : noop);
+module.exports = function(basedir, prefix, callback) {
+	callback = (typeof callback === 'function' ? callback : noop);
 
 	return operandi.serial([
-		get_folders_from_folder(folder),
+		getFolders(basedir),
 		filterPrefix(prefix),
-		getMetaData,
+		getMetaData(basedir),
 		removePackagesWithNoMainFile
-	], done);
+	], callback);
 };
